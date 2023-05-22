@@ -41,7 +41,7 @@
             "description": "Arbitrary-precision arithmetic library",
             "keywords": [
                 "Arbitrary-precision",
-                "BigInteger",
+                "bigIntegerbigIntegerUnsigned",
                 "BigRational",
                 "arithmetic",
                 "bigdecimal",

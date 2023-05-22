@@ -15,10 +15,10 @@ return new class extends Migration
     {
         Schema::create('category_limits', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('car_category_id')->nullable(false);
-            $table->bigInteger('employees_position_id')->nullable(false);
+            $table->bigInteger('car_category_id', false, true)->nullable(false);
+            $table->bigInteger('user_position_id', false, true)->nullable(false);
             $table->foreign('car_category_id')->references('id')->on('car_categories');
-            $table->foreign('employees_position_id')->references('id')->on('employees_positions');
+            $table->foreign('user_position_id')->references('id')->on('user_positions');
             $table->timestamps();
         });
     }
