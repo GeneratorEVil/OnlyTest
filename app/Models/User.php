@@ -21,6 +21,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'surname',
+        'patronymic',
+        'user_position_id',
     ];
 
     /**
@@ -41,4 +44,13 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function scheduledDrives()
+    {
+        return $this->hasMany(ScheduledDrive::class);
+    }
+
+    public function position(){
+        return $this->belongsTo(UserPosition::class, 'user_position_id', 'id');
+    }
 }
