@@ -16,13 +16,16 @@ class CarFactory extends Factory
      *
      * @return array<string, mixed>
      */
+
+    public $carCategoryId = 1;
     public function definition()
     {
+
         return [
             //
-            'model' => $this->faker->unique()->randomElement(['BMW 535', 'Hyundai Sonata', 'Lada Vesta']),
+            'model' => $this->faker->unique()->randomElements(['BMW 535', 'Hyundai Sonata', 'Lada Vesta'], 1)[0],
             'driver_id' => $this->faker->unique()->randomElement(Driver::all()->pluck('id')->toArray()),
-            'car_category_id' => $this->faker->randomElement(CarCategory::all()->pluck('id')->toArray()),
+            'car_category_id' => $this->carCategoryId++
         ];
     }
 }
