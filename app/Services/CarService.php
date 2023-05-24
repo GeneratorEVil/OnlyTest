@@ -18,7 +18,7 @@ class CarService
     public static function getAllowedUserCars(User $user): UserCarsDTO
     {
         $allowedCategoryIds = $user->position->allowedCategories->pluck('id')->toArray();
-        $allowedCars = Car::whereIn('car_category_id', $allowedCategoryIds)->get(['id', 'model']);
+        $allowedCars = Car::whereIn('car_category_id', $allowedCategoryIds)->get(['id', 'model', 'car_category_id']);
         $result = new UserCarsDTO();
         $result->cars = $allowedCars;
         $result->categories = $user->position->allowedCategories;

@@ -18,12 +18,13 @@ class CarFactory extends Factory
      */
 
     public $carCategoryId = 1;
+    public $carModels = ['BMW 535', 'Hyundai Sonata', 'Lada Vesta'];
     public function definition()
     {
 
         return [
             //
-            'model' => $this->faker->unique()->randomElements(['BMW 535', 'Hyundai Sonata', 'Lada Vesta'], 1)[0],
+            'model' => $this->carModels[$this->carCategoryId - 1],
             'driver_id' => $this->faker->unique()->randomElement(Driver::all()->pluck('id')->toArray()),
             'car_category_id' => $this->carCategoryId++
         ];

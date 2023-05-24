@@ -44,14 +44,13 @@ class SchedulerController extends Controller
             }
 
             $start = Carbon::parse($start);
-            $end = Carbon::parse($end);                   
+            $end = Carbon::parse($end);
 
             $user = User::findOrFail($userId);
 
             $allowedCars = CarService::getAllowedUserCars($user);
-            $allowedCarIds = $allowedCars->cars->pluck('id')->toArray();
+            $allowedCarIds = $categoryId ? $allowedCars->cars->where('car_category_id', $categoryId)->pluck('id')->toArray() : $allowedCars->cars->pluck('id')->toArray();
 
-            // Тут можно было использовать Validator, но я подумал ни кчему он тут.             
             if ($carId && !in_array($carId, $allowedCarIds)) {
                 throw new Exception('You are not allowed to use this car');
             }
@@ -64,17 +63,24 @@ class SchedulerController extends Controller
 
             $allowedCarsSchedule = ScheduledDrive::with('car')
                 ->whereIn('car_id', $allowedCarIds)
-                ->whereDate('end_datetime', '=', $start->toDateString())
-                ->where('end_datetime', '<=', $start)
-                ->when($categoryId, fn ($query) => $query->whereHas('car', fn ($query) => $query->where('car_category_id', $categoryId)))
+                ->whereDate('start_datetime', '=', $start->toDateString())
+                ->where('end_datetime', '>=', $start)
                 ->orderBy('end_datetime')
                 ->get();
 
-            $data = $allowedCarsSchedule->count() == 0 ? $allowedCars->cars : [];
+            foreach ($allowedCarIds as $carId) {
+                $carSchedule = collect($allowedCarsSchedule->where('car_id', $carId)->all())->values();
 
-            for ($i = 0; $i < $allowedCarsSchedule->count(); $i++) {
-                if ($start >= $allowedCarsSchedule[$i]->end_datetime && ($i + 1 == $allowedCarsSchedule->count() || $end <= $allowedCarsSchedule[$i + 1]->start_datetime)) {
-                    $data[] = $allowedCarsSchedule[$i]->car;
+                if ($carSchedule->count() == 0) {
+                    $data->push($allowedCars->cars->where('id', $carId)->first());
+                } else {
+                    foreach ($carSchedule as $i => $schedule) {
+
+                        $checkBetween = $start->between($schedule->start_datetime, $schedule->end_datetime);
+                        if (!$checkBetween && ($i + 1 == $carSchedule->count() || $end <= $carSchedule->get(++$i)->start_datetime)) {
+                            $data->push($carSchedule[$i]->car);
+                        }
+                    }
                 }
             }
         } catch (Exception $e) {
@@ -85,7 +91,7 @@ class SchedulerController extends Controller
         return response()->json(
             new JsonResponseDTO([
                 'success' => $success,
-                'message' => $message,                
+                'message' => $message,
                 'data' => $data
             ]),
             200

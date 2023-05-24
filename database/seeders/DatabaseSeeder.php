@@ -19,9 +19,10 @@ class DatabaseSeeder extends Seeder
         $this->call(CarCategoriesSeeder::class);
         $this->call(UserPositionsSeeder::class);
         $this->call(DriversSeeder::class);        
-        User::factory(10)->create();
+        User::factory(20)->create();
         Car::factory(3)->create();
         $this->call(CategoryLimitsSeeder::class);
+        $this->call(ScheduledDrivesSeeder::class);
 
     }
 }
