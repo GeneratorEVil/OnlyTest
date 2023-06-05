@@ -61,28 +61,27 @@ class SchedulerController extends Controller
 
             $allowedCarIds = $carId ? [$carId] : $allowedCarIds;
 
+
             $allowedCarsSchedule = ScheduledDrive::with('car')
                 ->whereIn('car_id', $allowedCarIds)
                 ->whereDate('start_datetime', '=', $start->toDateString())
-                ->where('end_datetime', '>=', $start)
+                ->whereBetween('start_datetime', [$start->toDateTimeString(), $end->toDateTimeString()])
+                ->orWhereBetween('end_datetime', [$start->toDateTimeString(), $end->toDateTimeString()])
                 ->orderBy('end_datetime')
                 ->get();
+                            
 
-            foreach ($allowedCarIds as $carId) {
+            // Проверяю полученный список для каждой машины
+            foreach ($allowedCarIds as $carId) {                
+                // Фильтрую колекцию по машине
                 $carSchedule = collect($allowedCarsSchedule->where('car_id', $carId)->all())->values();
-
+                // Если машина не занята то добаляю в массив
                 if ($carSchedule->count() == 0) {
                     $data->push($allowedCars->cars->where('id', $carId)->first());
-                } else {
-                    foreach ($carSchedule as $i => $schedule) {
-
-                        $checkBetween = $start->between($schedule->start_datetime, $schedule->end_datetime);
-                        if (!$checkBetween && ($i + 1 == $carSchedule->count() || $end <= $carSchedule->get(++$i)->start_datetime)) {
-                            $data->push($carSchedule[$i]->car);
-                        }
-                    }
-                }
+                } 
             }
+
+            
         } catch (Exception $e) {
             $success = false;
             $message = $e->getMessage();
